@@ -13,7 +13,7 @@ class authSeed {
     }
     
     public function fetchComputation($source_key, $time_sector = null) {
-        $this->sector = $time_sector == null ? round(time()/120)*120 : $time_sector;
+        $this->sector = $time_sector == null ? $this->fetchSector() : $time_sector;
 
         foreach(str_split($source_key) as $key => $value) {
             if ($key == 0) continue;
@@ -39,6 +39,9 @@ class authSeed {
         return $rtn_data;
     }
     
+    private function fetchSector() {
+        return round(time() / 120) * 120;
+    }
     private function charKey($character) {
         return strpos($this->charset, $character);
     }
@@ -50,7 +53,7 @@ class authSeed {
     
     public function altMethod() {
         $return_key   = null;
-        $current_hash = md5('mykey' . round(time()/120)*120);
+        $current_hash = md5('mykey' . $this->fetchSector());
         
         foreach(str_split($current_hash) as $value) 
             $return_key = $this->charKey($value);
