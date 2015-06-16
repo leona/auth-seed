@@ -7,25 +7,24 @@ class authSeed {
     private $key_randomization;
     private $sector;
     private $charset;
+    private $time_intervals;
     
     public function __construct($charset = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890') {
         $this->charset = $charset;
     }
     
-    public function fetchComputation($source_key, $time_sector = null) {
-        $this->sector = $time_sector == null ? $this->fetchSector() : $time_sector;
-
-        foreach(str_split($source_key) as $key => $value) {
-            if ($key == 0) continue;
-            $this->key_computation .= $this->charKey($value) * $key * round($this->sector / $key);
-        }
- 
-        foreach(str_split($this->key_computation) as $key => $value) {
-            $key_val = $key == 0 ? 1 : $key;
-            
-            $this->key_randomization .= $value * $key_val * round($this->sector / $key_val);
-        }
+    public function fetchComputation($source_key, $time_sector = null, $time_intervals = 120) {
+        $this->sector         = $time_sector == null ? $this->fetchSector() : $time_sector;
+        $this->time_intervals = $time_intervals;
         
+        $this->strIterate($source_key, function($key_val, $value) {
+            $this->key_computation .= $this->charKey($value) * $this->sector;
+        });
+ 
+        $this->strIterate($this->key_computation, function($key_val, $value) {
+            $this->key_randomization .= $value * $key_val * $this->sector;
+        });
+
         return substr($this->key_randomization, -6);
     }
     
@@ -39,9 +38,17 @@ class authSeed {
         return $rtn_data;
     }
     
-    private function fetchSector() {
-        return round(time() / 120) * 120;
+    private function strIterate($string, $callback) {
+        foreach(str_split($string) as $key => $value) {
+            if ($key == 0) continue;
+            $callback($key, $value);
+        }
     }
+    
+    private function fetchSector() {
+        return round(time() / $this->time_intervals) * $this->time_intervals;
+    }
+    
     private function charKey($character) {
         return strpos($this->charset, $character);
     }
