@@ -2,10 +2,15 @@
 
 class authSeed {
     
-    private $key_computation = null;
+    public $key_computation;
     private $sector;
     private $time_intervals;
-    private $charset = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890';
+    private $charset;
+    
+    public function __construct($charset = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890') {
+        $this->charset          = $charset;
+        $this->key_computation  = null;
+    }
     
     public function fetchComputation($source_key, $time_sector = null, $time_intervals = 120) {
         $this->sector         = $time_sector == null ? $this->fetchSector() : $time_sector;
