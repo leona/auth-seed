@@ -13,13 +13,13 @@ class authSeed {
     }
     
     public function fetchComputation($source_key, $time_sector = null, $time_intervals = 120) {
-        $this->sector         = $time_sector == null ? $this->fetchSector() : $time_sector;
         $this->time_intervals = $time_intervals;
+        $this->sector         = $time_sector == null ? $this->fetchSector() : $time_sector;
         
         foreach(str_split(md5($this->sector . $source_key)) as $value) 
             $this->key_computation .= $this->charKey($value);
-        
-        return substr($this->key_computation, -6);
+
+        return substr($this->key_computation, 0, 6);
     }
     
     public function generateKey($length) {
