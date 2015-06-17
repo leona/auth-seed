@@ -2,30 +2,19 @@
 
 class authSeed {
     
-    private $key;
-    private $key_computation;
-    private $key_randomization;
+    private $key_computation = null;
     private $sector;
-    private $charset;
     private $time_intervals;
-    
-    public function __construct($charset = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890') {
-        $this->charset = $charset;
-    }
+    private $charset = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890';
     
     public function fetchComputation($source_key, $time_sector = null, $time_intervals = 120) {
         $this->sector         = $time_sector == null ? $this->fetchSector() : $time_sector;
         $this->time_intervals = $time_intervals;
         
-        $this->strIterate($source_key, function($key_val, $value) {
-            $this->key_computation .= $this->charKey($value) * $this->sector;
-        });
- 
-        $this->strIterate($this->key_computation, function($key_val, $value) {
-            $this->key_randomization .= $value * $key_val * $this->sector;
-        });
-
-        return substr($this->key_randomization, -6);
+        foreach(str_split(md5($this->sector . $source_key)) as $value) 
+            $this->key_computation .= $this->charKey($value);
+        
+        return substr($this->key_computation, -6);
     }
     
     public function generateKey($length) {
@@ -37,35 +26,14 @@ class authSeed {
             
         return $rtn_data;
     }
-    
-    private function strIterate($string, $callback) {
-        foreach(str_split($string) as $key => $value) {
-            if ($key == 0) continue;
-            $callback($key, $value);
-        }
-    }
-    
+
     private function fetchSector() {
         return round(time() / $this->time_intervals) * $this->time_intervals;
     }
     
     private function charKey($character) {
-        return strpos($this->charset, $character);
-    }
+        $pos = strpos($this->charset, $character);
     
-    /*
-    private function stringRandomizer($string, $randomize_signature) {
-        
+        return strlen($pos) > 1 ? substr($pos, -1) : $pos;
     }
-    
-    public function altMethod() {
-        $return_key   = null;
-        $current_hash = md5('mykey' . $this->fetchSector());
-        
-        foreach(str_split($current_hash) as $value) 
-            $return_key = $this->charKey($value);
-        
-        return $return_key;
-    }
-    */
 }
